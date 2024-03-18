@@ -1,41 +1,40 @@
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#define WRITE 1
-#define READ 0;
-void execute_cmd(int *fd,char **env)
+#include "pipex.h"
+
+void	execute_cmd(char *fd, char **env)
 {
-  int fdt;
-  fdt = open("test.txt",O_RDWR);
-  dup2(fdt,STDIN_FILENO);
-  close(fdt);
-  dup2(fd[WRITE],STDOUT_FILENO);
-  execve("/usr/bin/tr",(char*[]){"tr","a-z","A-Z",NULL},env);
+	execve("/bin/cat", (char *[]){"ls", NULL}, env);
 }
 
-void execute_cmd2(int *fd,char **env)
+void	execute_cmd2(char *cmd, char **env)
 {
-  int fd;
-  fd = open("test.txt",O_RDWR);
-  dup2(fd,0);
-  execve("/bin/cat",(char*[]){"cat",NULL},env);
+	execve("/usr/bin/tr", (char *[]){"tr", "a-z", "A-Z", NULL}, env);
 }
-int main(int ac,char **av,char **env)
+int	main(int ac, char **av, char **env) // ./pipex file1 cmd1 cmd2 file2
 {
-  pid_t child_pid;
-  int fd[2];
-  pipe(fd);
-  child_pid = fork();
-  if(child_pid == 0)
-  {
-    execute_cmd(fd,env);
-    printf("im the child my pid is %d\n",getpid());
-  }
-  else{
-    wait(0);
-    execute_cmd2(fd,env);
-    printf("im the parent my pid is %d\n",getpid());
-  }
- return 0;
+	pid_t child_pid;
+	int fd[2];
+	int ifd;
+	int ofd;
+	if (ac < 3)
+		return (0);
+	ifd = open(av[1], O_RDONLY);
+	ofd = open(av[2], O_WRONLY | O_APPEND | O_CREAT, 0644);
+	pipe(fd);
+	child_pid = fork();
+	if (child_pid == 0)
+	{
+		close(fd[READ]);
+		dup2(fd[WRITE], STDOUT_FILENO);
+		dup2(ifd, STDIN_FILENO);
+		execute_cmd("cat", env);
+	}
+	else
+	{
+		wait(0);
+		close(fd[WRITE]);
+		dup2(fd[READ], STDIN_FILENO);
+		dup2(ofd, STDOUT_FILENO);
+		execute_cmd2("tr", env);
+	}
+	return (0);
 }
