@@ -7,7 +7,7 @@ char	*ft_whereis(char *cmd, char **env)
 	char *cmd_path;
 
 	cmd_path = cmd;
-	if (!access(cmd_path, F_OK))
+	if (!access(cmd_path, X_OK))
 		return (cmd_path);
 	while (*env)
 	{
