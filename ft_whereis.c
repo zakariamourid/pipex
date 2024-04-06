@@ -6,15 +6,20 @@ char	*ft_whereis(char *cmd, char **env)
 	char **paths;
 	char *cmd_path;
 
-	cmd_path = cmd;
-	if (!access(cmd_path, X_OK))
-		return (cmd_path);
 	while (*env)
 	{
 		if (!ft_strncmp(*env, "PATH=", 5))
 			path = *env;
-		**env++;
+		env++;
 	}
+	cmd_path = cmd;
+	if(ft_strchr(cmd_path,'/'))
+	{
+	if (!access(cmd_path, X_OK))
+		return (cmd_path);
+	}
+	else
+	{
 	paths = ft_split(path + 5, ':');
 	while (*paths)
 	{
@@ -25,7 +30,8 @@ char	*ft_whereis(char *cmd, char **env)
 				return (cmd_path);
 		}
 		free(cmd_path);
-		**paths++;
+		paths++;
+	}
 	}
 	return (NULL);
 }

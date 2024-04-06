@@ -1,33 +1,48 @@
 #include "pipex.h"
 
-void	execute_command(char **env)
-{
-	int		fd;
-	int		fd2;
-
-	char *args[] = {"tr", "a-z", "A-Z", NULL};
-	fd = open("test.txt", O_RDONLY);
-	fd2 = open("result.txt", O_RDWR | O_CREAT);
-	dup2(fd, 0);
-	dup2(fd2, 1);
-	close(fd);
-	close(fd2);
-	execve("/usr/bin/tr", args, env);
-	perror("problema");
+void pipex_error(char *str) {
+  printf("error : %s\n", str);
+  exit(0);
 }
-int	main(int ac, char **av, char **env)
-{
-	pid_t	child_pid;
+void execute_cmd(char *cmd, char **env) {
+  char *path;
+  char **args;
 
-	child_pid = fork();
-	if (child_pid == 0)
-	{
-		execute_command(env);
-	}
-	else
-	{
-		wait(NULL);
-		printf("main program is finished !!!");
-	}
-	return (0);
+  args = ft_split(cmd, ' ');
+  if (!args)
+    pipex_error("split");
+  path = ft_whereis(args[0], env);
+  execve(path, args, env);
+}
+void execute_first_cmd(char **av, char **env) { int infd; }
+
+int main(int ac, char **av, char **env) // ./pipex file1 cmd1 cmd2 file2
+{
+  pid_t child_pid;
+  pid_t child_pid2;
+  int fd[2];
+  int ifd;
+  int ofd;
+  if (ac < 5)
+    return (0);
+  ifd = open(av[1], O_RDONLY);
+  ofd = open(av[4], O_WRONLY | O_CREAT, 0644);
+  pipe(fd);
+  child_pid = fork1();
+  if (child_pid == 0) {
+    close(fd[READ]);
+    dup2(fd[WRITE], STDOUT_FILENO);
+    close(fd[WRITE]);
+    dup2(ifd, STDIN_FILENO);
+    close(ifd);
+    execute_cmd(av[2], env);
+  } else {
+    close(fd[WRITE]);
+    dup2(fd[READ], STDIN_FILENO);
+    close(fd[READ]);
+    dup2(ofd, STDOUT_FILENO);
+    close(ofd);
+    execute_cmd(av[3], env);
+  }
+  return (0);
 }
