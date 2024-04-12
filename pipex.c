@@ -14,7 +14,10 @@ void execute_cmd(char *cmd, char **env) {
   path = ft_whereis(args[0], env);
   execve(path, args, env);
 }
-void execute_first_cmd(char **av, char **env) { int infd; }
+void execute_first_cmd(t_pipex *pipex, char *cmd) {
+  int infd;
+  ifd = open(av[1], O_RDONLY);
+}
 
 int main(int ac, char **av, char **env) // ./pipex file1 cmd1 cmd2 file2
 {
@@ -25,24 +28,22 @@ int main(int ac, char **av, char **env) // ./pipex file1 cmd1 cmd2 file2
   int ofd;
   if (ac < 5)
     return (0);
-  ifd = open(av[1], O_RDONLY);
   ofd = open(av[4], O_WRONLY | O_CREAT, 0644);
-  pipe(fd);
-  child_pid = fork1();
-  if (child_pid == 0) {
-    close(fd[READ]);
-    dup2(fd[WRITE], STDOUT_FILENO);
-    close(fd[WRITE]);
-    dup2(ifd, STDIN_FILENO);
-    close(ifd);
-    execute_cmd(av[2], env);
-  } else {
-    close(fd[WRITE]);
-    dup2(fd[READ], STDIN_FILENO);
-    close(fd[READ]);
-    dup2(ofd, STDOUT_FILENO);
-    close(ofd);
-    execute_cmd(av[3], env);
-  }
   return (0);
 }
+
+//  if (child_pid == 0) {
+//    close(fd[READ]);
+//    dup2(fd[WRITE], STDOUT_FILENO);
+//    close(fd[WRITE]);
+//    dup2(ifd, STDIN_FILENO);
+//    close(ifd);
+//    execute_cmd(av[2], env);
+//  } else {
+//    close(fd[WRITE]);
+//    dup2(fd[READ], STDIN_FILENO);
+//    close(fd[READ]);
+//    dup2(ofd, STDOUT_FILENO);
+//    close(ofd);
+//    execute_cmd(av[3], env);
+//  }
