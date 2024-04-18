@@ -15,23 +15,13 @@ char *get_cmd_path(char *cmd,char *path)
 	while(*paths)
 	{
 		path = ft_strjoin(*paths, cmd2);
+		if(!access(path,X_OK))
 		{
-			if(!access(cmd_path,X_OK))
-			{
-				return cmd_path;
-			}
-			else 
-			{
-			perror("cmd");
-			exit(127);
-			}
+			return path;
 		}
-		else 
-		{
-			perror("cmd");
-			exit(127);
-		}
+		paths++;
 	}
+	return NULL;
 }
 char	*get_path(char *cmd, char **env)
 {

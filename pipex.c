@@ -58,8 +58,8 @@ void execute_last_cmd(t_pipex *pipex)
 
 int main(int ac, char **av, char **env) // ./pipex file1 cmd1 cmd2 file2
 {
-	pid_t child_pid;
-	pid_t child_pid2;
+//	pid_t child_pid;
+//	pid_t child_pid2;
 	t_pipex pipex;
 	if(ac == 5)
 	{
