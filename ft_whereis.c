@@ -1,9 +1,41 @@
+#include "libft/libft.h"
 #include "pipex.h"
+#include <sys/unistd.h>
 
-char	*ft_whereis(char *cmd, char **env)
+char *get_cmd_path(char *cmd,char *path)
+{
+	char **paths;
+	char *cmd_path;
+	char *cmd2;
+	cmd2 = ft_strjoin("/", cmd);
+	paths = ft_split(path + 5, ':');
+	cmd_path = 0;
+	if(!paths)
+		pipex_error("split", 1);
+	while(*paths)
+	{
+		path = ft_strjoin(*paths, cmd2);
+		{
+			if(!access(cmd_path,X_OK))
+			{
+				return cmd_path;
+			}
+			else 
+			{
+			perror("cmd");
+			exit(127);
+			}
+		}
+		else 
+		{
+			perror("cmd");
+			exit(127);
+		}
+	}
+}
+char	*get_path(char *cmd, char **env)
 {
 	char *path;
-	char **paths;
 	char *cmd_path;
 
 	while (*env)
@@ -17,21 +49,6 @@ char	*ft_whereis(char *cmd, char **env)
 	{
 	if (!access(cmd_path, X_OK))
 		return (cmd_path);
-	}
-	else
-	{
-	paths = ft_split(path + 5, ':');
-	while (*paths)
-	{
-		cmd_path = ft_strjoin(*paths, ft_strjoin("/", cmd));
-		if (!access(cmd_path, F_OK))
-		{
-			if (!access(cmd_path, X_OK))
-				return (cmd_path);
-		}
-		free(cmd_path);
-		paths++;
-	}
 	}
 	return (NULL);
 }
