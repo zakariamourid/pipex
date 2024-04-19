@@ -1,5 +1,6 @@
 #include "pipex.h"
 #include "libft/libft.h"
+#include <stdlib.h>
 #include <sys/unistd.h>
 #include <unistd.h>
 
@@ -16,7 +17,10 @@ void free_all(char **data)
 char *ft_look_in_path(char *cmd,char *path)
 {
 	if(!cmd || !path)
-		return NULL;
+	{
+		dprintf(2,"pipex: command not found: %s\n",cmd);
+		exit(127);
+	}
 	char *cmd_path;
 	path += 5;
 	char **paths = ft_split(path,':');
@@ -56,13 +60,7 @@ char	*get_cmd_path(char *cmd, char **env)
 	char *path;
 	char *cmd_path;
 
-	while (*env)
-	{
-		if (!ft_strncmp(*env, "PATH=", 5))
-			path = *env;
-		env++;
-	}
-	cmd_path = cmd;
+
 	if(ft_strchr(cmd_path,'/'))
 	{
 		if (!access(cmd_path, F_OK))
@@ -75,6 +73,14 @@ char	*get_cmd_path(char *cmd, char **env)
 		dprintf(2,"pipex: command not found: %s\n",cmd);
 		exit(127);
 	}
+	path = NULL;
+	while (*env)
+	{
+		if (!ft_strncmp(*env, "PATH=", 5))
+			path = *env;
+		env++;
+	}
+	cmd_path = cmd;
 	cmd = ft_look_in_path(cmd, path);
 	return (cmd);
 }

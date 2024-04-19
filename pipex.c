@@ -1,5 +1,6 @@
 #include "pipex.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/_types/_pid_t.h>
 #include <sys/fcntl.h>
 #include <sys/wait.h>
@@ -16,6 +17,7 @@ void execute_cmd(char *cmd, char **env) {
   path = get_cmd_path(args[0], env);
   execve(path, args, env);
 }
+
 int execute_first_cmd(t_pipex *pipex) 
 {
 	int ifd;
@@ -27,10 +29,7 @@ int execute_first_cmd(t_pipex *pipex)
 		return pid;
 	ifd = open(pipex->av[1],O_RDONLY);
 	if(ifd == -1)
-	{
-		perror("ifd");
-		exit(0);
-	}
+		pipex_error(pipex->av[1],EXIT_FAILURE);
 	dup2(ifd,STDIN_FILENO);
 	dup2(pipex->pipe_fd[WRITE],STDOUT_FILENO);
 	close(ifd);
@@ -74,8 +73,17 @@ int main(int ac, char **av, char **env) // ./pipex file1 cmd1 cmd2 file2
 		close(pipex.pipe_fd[WRITE]);
 		int pid_2 = execute_last_cmd(&pipex);
 		close(pipex.pipe_fd[READ]);
-		waitpid(pid_1,&status1,0);
-		waitpid(pid_1,&status2,0);
+		int p2 = 0;
+		while(waitpid(p2,&status2,0) != -1)
+		{
+		 p2 = WEXITSTATUS(status2);
+			if(p2 == 127 || p2 == 126 || p2 == -1 || p2 == 0)
+			{
+				exit(p2);
+			}
+		
+		}
+		return p2;
 	}
 return (0);
 }
