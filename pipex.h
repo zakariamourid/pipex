@@ -14,8 +14,8 @@ typedef struct s_pipex {
   char **cmd_args;
 } t_pipex;
 char *ft_whereis(char *cmd, char **env);
-void pipex_error(char *str,int e);
-pid_t fork1();
+void pipex_error(char *str,int e); pid_t fork1();
+char	*get_cmd_path(char *cmd, char **env);
 #define WRITE 1
 #define READ 0
 

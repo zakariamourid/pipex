@@ -1,7 +1,7 @@
 CC= cc
 CFLAGS= -Wall -Wextra #-Werror
 NAME= pipex
-CFILES = ft_whereis.c pipex.c pipex_errors.c
+CFILES =  pipex.c pipex_errors.c pipex_utils.c
 OFILES = $(CFILES:.c=.o)
 LINKS= -lft -L./libft
 

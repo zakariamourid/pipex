@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <sys/_types/_pid_t.h>
 #include <sys/fcntl.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <fcntl.h>
 
@@ -12,10 +13,10 @@ void execute_cmd(char *cmd, char **env) {
   args = ft_split(cmd, ' ');
   if (!args)
     pipex_error("split",1);
-  path = ft_whereis(args[0], env);
+  path = get_cmd_path(args[0], env);
   execve(path, args, env);
 }
-void execute_first_cmd(t_pipex *pipex) 
+int execute_first_cmd(t_pipex *pipex) 
 {
 	int ifd;
 	pid_t pid;
@@ -23,7 +24,7 @@ void execute_first_cmd(t_pipex *pipex)
 	if(pid == -1)
 		perror("fork");
 	if(pid != 0)
-		return;
+		return pid;
 	ifd = open(pipex->av[1],O_RDONLY);
 	if(ifd == -1)
 	{
@@ -35,9 +36,10 @@ void execute_first_cmd(t_pipex *pipex)
 	close(ifd);
 	close(pipex->pipe_fd[WRITE]);
 	execute_cmd(pipex->av[2],pipex->env);
+	return -1;
 }
 
-void execute_last_cmd(t_pipex *pipex) 
+int execute_last_cmd(t_pipex *pipex) 
 {
 	int ofd;
 	pid_t pid;
@@ -45,7 +47,7 @@ void execute_last_cmd(t_pipex *pipex)
 	if(pid == -1)
 		pipex_error("fork",1);
 	if(pid != 0)
-		return;
+		return pid;
 	ofd = open(pipex->av[4],O_RDWR|O_CREAT,0664);
 	if(ofd == -1)
 		pipex_error("can't create file",1);
@@ -54,12 +56,13 @@ void execute_last_cmd(t_pipex *pipex)
 	close(ofd);
 	close(pipex->pipe_fd[READ]);
 	execute_cmd(pipex->av[3],pipex->env);
+	return -1;
 }
 
 int main(int ac, char **av, char **env) // ./pipex file1 cmd1 cmd2 file2
 {
-//	pid_t child_pid;
-//	pid_t child_pid2;
+	int status1;
+	int status2;
 	t_pipex pipex;
 	if(ac == 5)
 	{
@@ -67,10 +70,12 @@ int main(int ac, char **av, char **env) // ./pipex file1 cmd1 cmd2 file2
 		pipex.env = env;
 		if(pipe(pipex.pipe_fd) == -1)
 			perror("pipe");
-		execute_first_cmd(&pipex);
+		int pid_1 = execute_first_cmd(&pipex);
 		close(pipex.pipe_fd[WRITE]);
-		execute_last_cmd(&pipex);
+		int pid_2 = execute_last_cmd(&pipex);
 		close(pipex.pipe_fd[READ]);
+		waitpid(pid_1,&status1,0);
+		waitpid(pid_1,&status2,0);
 	}
 return (0);
 }

@@ -1,8 +1,6 @@
 #include "pipex.h"
 void pipex_error(char *str,int e) {
-//	printf("error : %s\n", str);
 	perror(str);
-	system("leaks a.out");
 	exit(e);
 }
 //char *get_cmd_path(char *cmd,char *path)
