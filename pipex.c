@@ -30,6 +30,7 @@ int execute_first_cmd(t_pipex *pipex)
 	ifd = open(pipex->av[1],O_RDONLY);
 	if(ifd == -1)
 		pipex_error(pipex->av[1],EXIT_FAILURE);
+	close(pipex->pipe_fd[READ]);
 	dup2(ifd,STDIN_FILENO);
 	dup2(pipex->pipe_fd[WRITE],STDOUT_FILENO);
 	close(ifd);
@@ -51,9 +52,10 @@ int execute_last_cmd(t_pipex *pipex)
 	if(ofd == -1)
 		pipex_error("can't create file",1);
 	dup2(ofd,STDOUT_FILENO);
-	dup2(pipex->pipe_fd[READ],STDIN_FILENO);
 	close(ofd);
+	dup2(pipex->pipe_fd[READ],STDIN_FILENO);
 	close(pipex->pipe_fd[READ]);
+	close(pipex->pipe_fd[WRITE]);
 	execute_cmd(pipex->av[3],pipex->env);
 	return -1;
 }
@@ -69,21 +71,15 @@ int main(int ac, char **av, char **env) // ./pipex file1 cmd1 cmd2 file2
 		pipex.env = env;
 		if(pipe(pipex.pipe_fd) == -1)
 			perror("pipe");
-		int pid_1 = execute_first_cmd(&pipex);
+	 execute_first_cmd(&pipex);
 		close(pipex.pipe_fd[WRITE]);
-		int pid_2 = execute_last_cmd(&pipex);
+	 execute_last_cmd(&pipex);
 		close(pipex.pipe_fd[READ]);
+		int p1 = 0;
 		int p2 = 0;
-		while(waitpid(p2,&status2,0) != -1)
-		{
-		 p2 = WEXITSTATUS(status2);
-			if(p2 == 127 || p2 == 126 || p2 == -1 || p2 == 0)
-			{
-				exit(p2);
-			}
-		
-		}
-		return p2;
+		waitpid(p1,&status2,0);
+		waitpid(p2,&status2,0);
+		p2 = WEXITSTATUS(status2);
 	}
 return (0);
 }

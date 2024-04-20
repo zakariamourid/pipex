@@ -4,8 +4,7 @@
 #include <sys/unistd.h>
 #include <unistd.h>
 
-void free_all(char **data)
-{
+void free_all(char **data) {
 	if(!data)
 		return;
 	while(*data)
@@ -13,6 +12,7 @@ void free_all(char **data)
 		free(*data);
 		data++;
 	}
+	data = NULL;
 }
 char *ft_look_in_path(char *cmd,char *path)
 {
@@ -48,7 +48,6 @@ char *ft_look_in_path(char *cmd,char *path)
 		free(cmd_path);
 	}
 	free_all(paths);
-	free(paths);
 	free(cmd2);
 	dprintf(2,"pipex: command not found: %s\n",cmd);
 	exit(127);
@@ -60,7 +59,7 @@ char	*get_cmd_path(char *cmd, char **env)
 	char *path;
 	char *cmd_path;
 
-
+	cmd_path = cmd;
 	if(ft_strchr(cmd_path,'/'))
 	{
 		if (!access(cmd_path, F_OK))
