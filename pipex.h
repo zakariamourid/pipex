@@ -8,6 +8,7 @@
 typedef struct s_pipex {
   char **env;
   char **av;
+  int ac;
   int in_fd;
   int out_fd;
   int pipe_fd[2];

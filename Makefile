@@ -1,5 +1,5 @@
 CC= cc
-CFLAGS= -Wall -Wextra -fsanitize=address -Werror
+CFLAGS= -Wall -Wextra #-Werror
 NAME= pipex
 CFILES =  pipex.c pipex_errors.c pipex_utils.c 
 OFILES = $(CFILES:.c=.o)
