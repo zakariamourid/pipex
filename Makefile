@@ -1,5 +1,5 @@
 CC= cc
-CFLAGS= -Wall -Wextra -fsanitize=address#-Werror
+CFLAGS= -Wall -Wextra -fsanitize=address -Werror
 NAME= pipex
 CFILES =  pipex.c pipex_errors.c pipex_utils.c 
 OFILES = $(CFILES:.c=.o)
@@ -21,5 +21,7 @@ fclean: clean
 	rm -rf $(NAME)
 
 re: fclean all
+
+.PHONY: all bonus clean fclean re
 
 .SECONDARY: $(OFILES)

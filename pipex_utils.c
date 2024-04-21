@@ -4,7 +4,8 @@
 #include <sys/unistd.h>
 #include <unistd.h>
 
-void free_all(char **data) {
+void free_all(char **data) 
+{
 	if(!data)
 		return;
 	while(*data)
@@ -12,15 +13,11 @@ void free_all(char **data) {
 		free(*data);
 		data++;
 	}
-	data = NULL;
 }
 char *ft_look_in_path(char *cmd,char *path)
 {
 	if(!cmd || !path)
-	{
-		dprintf(2,"pipex: command not found: %s\n",cmd);
-		exit(127);
-	}
+		pipex_error(cmd,127);
 	char *cmd_path;
 	path += 5;
 	char **paths = ft_split(path,':');
@@ -31,8 +28,7 @@ char *ft_look_in_path(char *cmd,char *path)
 	cmd_path = ft_strjoin(paths[i],cmd2);
   	if(!access(cmd_path, F_OK))
 		{
-			if(!access(cmd_path, X_OK))
-			{
+			if(!access(cmd_path, X_OK)) {
 				free_all(paths);
 				free(paths);
 				free(cmd2);
@@ -40,46 +36,39 @@ char *ft_look_in_path(char *cmd,char *path)
 			}
 			else
 			{	
-				pipex_error(cmd,126);
-				return (free(cmd),free_all(paths),NULL);
+				pipex_error(cmd_path,126);
 			};
 		}
 		i++;
 		free(cmd_path);
 	}
-	free_all(paths);
-	free(cmd2);
-	dprintf(2,"pipex: command not found: %s\n",cmd);
+	pipex_error(cmd,127);
 	exit(127);
 	return NULL;
 }
 
-char	*get_cmd_path(char *cmd, char **env)
+char	*get_cmd_path(char *cmd, t_pipex *pipex) 
 {
 	char *path;
-	char *cmd_path;
 
-	cmd_path = cmd;
-	if(ft_strchr(cmd_path,'/'))
+	if(ft_strchr(cmd,'/'))
 	{
-		if (!access(cmd_path, F_OK))
+		if (!access(cmd, F_OK))
 		{
-			if (!access(cmd_path, X_OK))
-				return cmd_path;
+			if (!access(cmd, X_OK))
+				return cmd;
 			else
 			 pipex_error(cmd, 126);;
 		}
-		dprintf(2,"pipex: command not found: %s\n",cmd);
-		exit(127);
+		pipex_error(cmd,127);
 	}
 	path = NULL;
-	while (*env)
+	while (*pipex->env)
 	{
-		if (!ft_strncmp(*env, "PATH=", 5))
-			path = *env;
-		env++;
+		if (!ft_strncmp(*pipex->env, "PATH=", 5))
+			path = *pipex->env;
+		pipex->env++;
 	}
-	cmd_path = cmd;
 	cmd = ft_look_in_path(cmd, path);
 	return (cmd);
 }
