@@ -30,4 +30,3 @@ void pipex_error(char *str,int e) {
 	}
 	exit(e);
 }
-

@@ -13,7 +13,7 @@ t_pipex *get_pipex(void)
 }
 void execute_cmd(char *cmd, t_pipex *pipex) {
   char *path;
-  pipex->cmd_args = ft_split(cmd, ' ');
+  pipex->cmd_args = ft_split(cmd,"\t\n\v\f\r ");
   if (!pipex->cmd_args)
     pipex_error("split",1);
 	path = get_cmd_path(pipex->cmd_args[0], pipex);

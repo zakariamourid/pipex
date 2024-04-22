@@ -21,6 +21,7 @@ fclean: clean
 	rm -rf $(NAME)
 
 re: fclean all
+	@make re -C ./libft
 
 .PHONY: all bonus clean fclean re
 
