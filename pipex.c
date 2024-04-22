@@ -42,29 +42,32 @@ int execute_first_cmd(t_pipex *pipex)
 	return -1;
 }
 
+int child_exec(int i, t_pipex *pipex)
+{
+	dup2(pipex->tmp,STDIN_FILENO);//prev pipe READ;
+	close(pipex->tmp);
+	dup2(pipex->pipe_fd[WRITE],STDOUT_FILENO);//next command WRITE;
+	close(pipex->pipe_fd[WRITE]); //unsed fd;
+	close(pipex->pipe_fd[READ]); //unused for now;
+	execute_cmd(pipex->av[i + 3],pipex);
+	return 1;
+}
+
 int execute_commands(t_pipex *pipex)
 {
-	int i = 0;
-	int pid = -1;
+	int i;
+	i = 0;
 	pipex->tmp = pipex->pipe_fd[READ];
 	close(pipex->pipe_fd[WRITE]);// so now only one pipe side is open 
 	pipex->pids = (int *) malloc(sizeof(int) * (pipex->ac - 5));
-//	printf("ac - 5 = %d ||| ac - 2  =%d\n ",pipex->ac - 5,pipex->ac -2);
+	if(!pipex->pids)
+		pipex_error("malloc", 1);
 	while(i < pipex->ac - 5)
 	{
-//		printf("hi im child num %d for command = %s \n",i+1,pipex->av[i+3]);
 		pipe(pipex->pipe_fd);
 		pipex->pids[i] = fork();
 		if(pipex->pids[i] == 0)
-		{ 
-			dup2(pipex->tmp,STDIN_FILENO);//prev pipe READ;
-			close(pipex->tmp);
-			dup2(pipex->pipe_fd[WRITE],STDOUT_FILENO);//next command WRITE;
-			close(pipex->pipe_fd[WRITE]); //unsed fd;
-			close(pipex->pipe_fd[READ]); //unused for now;
-			execute_cmd(pipex->av[i + 3],pipex);
-			return 0;
-		}
+			child_exec(i,pipex);
 		else
 		{
 		close(pipex->tmp);
@@ -75,6 +78,7 @@ int execute_commands(t_pipex *pipex)
 	}
 	return 0;
 }
+
 int execute_last_cmd(t_pipex *pipex) 
 {
 	int ofd;
@@ -96,17 +100,16 @@ int execute_last_cmd(t_pipex *pipex)
 }
 int main(int ac, char **av, char **env) // ./pipex file1 cmd1 cmd2 cmd3 cmd4 file2
 {
-	int status1;
 	int status2;
-	int status3;
-	status1 = 0;
+	int i;
 	status2 = 0;
-	status3 = 0;
+	i = 0;
+	if(ac < 5)
+		return 0;
 	t_pipex *pipex;
 	pipex =get_pipex();
 	int p2 = 0;
 	int p1 = 0;
-	int p3 = 0;
 	pipex->av = av;
 	pipex->env = env;
 	pipex->ac = ac;
@@ -116,13 +119,9 @@ int main(int ac, char **av, char **env) // ./pipex file1 cmd1 cmd2 cmd3 cmd4 fil
 	execute_commands(pipex);
 	p2 = execute_last_cmd(pipex); //3  pipe_fd[READ]
 	close(pipex->pipe_fd[READ]);
-	waitpid(p1, &status1, 0);
-	int i = 0;
+	waitpid(p1, 0, 0);
 	while(i < pipex->ac - 5)
-	{
-		waitpid(pipex->pids[i],0,0);
-		i++;
-	}
+		waitpid(pipex->pids[i++],0,0);
 	waitpid(p2, &status2, 0);
 	if((WIFEXITED(status2)))
 		return (status2 >> 8);

@@ -12,7 +12,6 @@ typedef struct s_pipex {
   int in_fd;
   int out_fd;
   int pipe_fd[2];
-  int pipe_fd2[2];
   int *pids;
   char **cmd_args; 
   int *fds;

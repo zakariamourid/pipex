@@ -1,10 +1,11 @@
 #include "pipex.h"
 #include "libft/libft.h"
 #include <stdlib.h>
+#include <sys/fcntl.h>
 #include <sys/unistd.h>
 #include <unistd.h>
 
-void free_all(char **data) 
+void free_all(char **data,char *cmd) 
 {
 	int i;
 
@@ -17,6 +18,7 @@ void free_all(char **data)
 		i++;
 	}
 	free(data);
+	free(cmd);
 }
 char *ft_look_in_path(char *cmd,char *path)
 {
@@ -32,8 +34,7 @@ char *ft_look_in_path(char *cmd,char *path)
   	if(!access(cmd_path, F_OK))
 		{
 			if(!access(cmd_path, X_OK)) {
-				free_all(paths);
-				free(cmd2);
+				free_all(paths,cmd2);
 				return cmd_path;
 			}
 			else
@@ -46,6 +47,15 @@ char *ft_look_in_path(char *cmd,char *path)
 	return NULL;
 }
 
+void check_dir(char *cmd)
+{
+	int fd;
+	fd = open(cmd,O_DIRECTORY);
+	if(fd != -1)
+		pipex_error(cmd, 1026);
+	close(fd);
+}
+
 char	*get_cmd_path(char *cmd, t_pipex *pipex) 
 {
 	char *path;
@@ -56,10 +66,12 @@ char	*get_cmd_path(char *cmd, t_pipex *pipex)
 	{
 		if (!access(cmd, F_OK))
 		{
+			check_dir(cmd);
+			dprintf(2,"dir = %s\n",cmd);
 			if (!access(cmd, X_OK))
 				return cmd;
 			else
-			 pipex_error(cmd, 126);;
+			 pipex_error(cmd, 126);
 		}
 		pipex_error(cmd,127);
 	}
