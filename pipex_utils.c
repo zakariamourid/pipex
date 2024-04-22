@@ -6,21 +6,24 @@
 
 void free_all(char **data) 
 {
+	int i;
+
+	i = 0;
 	if(!data)
 		return;
-	while(*data)
+	while(data[i])
 	{
-		free(*data);
-		data++;
+		free(data[i]);
+		i++;
 	}
+	free(data);
 }
 char *ft_look_in_path(char *cmd,char *path)
 {
 	if(!cmd || !path)
 		pipex_error(cmd,127);
 	char *cmd_path;
-	path += 5;
-	char **paths = ft_split(path,':');
+	char **paths = ft_split(path + 5,':');
 	char *cmd2 = ft_strjoin("/",cmd);
 	int i = 0;
 	while(paths[i])
@@ -30,20 +33,16 @@ char *ft_look_in_path(char *cmd,char *path)
 		{
 			if(!access(cmd_path, X_OK)) {
 				free_all(paths);
-				free(paths);
 				free(cmd2);
 				return cmd_path;
 			}
 			else
-			{	
 				pipex_error(cmd_path,126);
-			};
 		}
 		i++;
 		free(cmd_path);
 	}
 	pipex_error(cmd,127);
-	exit(127);
 	return NULL;
 }
 
@@ -51,6 +50,8 @@ char	*get_cmd_path(char *cmd, t_pipex *pipex)
 {
 	char *path;
 
+	if(!cmd || !*cmd)
+		pipex_error("", 127);
 	if(ft_strchr(cmd,'/'))
 	{
 		if (!access(cmd, F_OK))
@@ -69,7 +70,6 @@ char	*get_cmd_path(char *cmd, t_pipex *pipex)
 			path = *pipex->env;
 		pipex->env++;
 	}
-	cmd = ft_look_in_path(cmd, path);
-	return (cmd);
+	return (ft_look_in_path(cmd,path));
 }
 

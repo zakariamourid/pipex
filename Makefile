@@ -1,7 +1,7 @@
 CC= cc
-CFLAGS= -Wall -Wextra #-Werror
+CFLAGS= -Wall -Wextra -fsanitize=address #-Werror
 NAME= pipex
-CFILES =  pipex.c pipex_errors.c pipex_utils.c 
+CFILES =  pipex.c pipex_errors.c pipex_utils.c  
 OFILES = $(CFILES:.c=.o)
 LINKS= -lft -L./libft
 

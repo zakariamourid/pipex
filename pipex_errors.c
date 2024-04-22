@@ -1,5 +1,6 @@
 #include "libft/libft.h"
 #include "pipex.h"
+#include <sys/syslimits.h>
 #include <unistd.h>
 
 void pipex_error(char *str,int e) {
@@ -19,3 +20,4 @@ void pipex_error(char *str,int e) {
 	}
 	exit(e);
 }
+
